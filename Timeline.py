@@ -30,28 +30,25 @@ def main():
 
     root.mainloop()
 
-def temp():
-    global timelineData
-    timelineData['in1'] = 'test'
-    timelineData['in2'] = ['1', '2']
-    timelineData['in4'] = {'in5':'test2'}
 
-
-folder = os.popen('chdir').read().strip('\n')
-if(not os.path.exists(folder+ r'\timelineData.json')):
-    print('not')
+def check_data():
+    folder = os.popen('chdir').read().strip('\n')
+    if(not os.path.exists(folder+ r'\timelineData.json')):
+        print('not')
+        with open('timelineData.json', 'w') as f:
+            pass
+        timelineData = {}
+    else:
+        print('here')
+        with open('timelineData.json', 'r') as f:
+            d = f.read()
+            timelineData = json.loads(d)
+def save():
     with open('timelineData.json', 'w') as f:
-        pass
-    timelineData = {}
-else:
-    print('here')
-    with open('timelineData.json', 'r') as f:
-        d = f.read()
-        timelineData = json.loads(d)
+        d = json.dumps(timelineData)
+        f.write(d)
 
-print(timelineData)
-temp()
-print(timelineData)
-with open('timelineData.json', 'w') as f:
-    d = json.dumps(timelineData)
-    f.write(d)
+check_data()
+main()
+save()
+
