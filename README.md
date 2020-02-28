@@ -1,4 +1,4 @@
-# Timeline
+# Timeline Maker
 
 - [ ] Create Timelines
 - [ ] Edit Timelines
