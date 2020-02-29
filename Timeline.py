@@ -6,13 +6,26 @@ from os import popen, path
 
 class EventS:
     def __init__(self, eName, day, month, year, eInfo, Tags):
-        global timelineData
         self.eName, self.Date = eName, f'{day.zfill(2)}/{month}/{year.zfill(4)}'
         self.eInfo, self.Tags = eInfo, Tags
 
-        timelineData[self.eName] = {'date': self.Date, 'info': self.eInfo, 'tags': self.Tags}
+        self.info = {'date': self.Date, 'info': self.eInfo, 'tags': self.Tags}
 
-        
+    def draw_point(self, xc, y1, y2, i, timeline):
+        self.name = i
+        self.xc = xc
+        self.y1=y1
+        self.y2 = y2
+        self.point = timeline.create_oval(xc-4, y1, xc+4, y2, fill='black', activefill='red', tags=('date', str(self.name)))
+        timeline.tag_bind(self.name, '<ButtonPress-1>', lambda x: showInfo(x, self.name))
+
+    def draw_txt(self, xc, interval, anchor, i, timeline):
+        self.interval = interval
+        self.anchor = anchor
+        self.txt = timeline.create_text(xc, interval, anchor=anchor, text=self.name, angle=90, tags=('date', str(self.name)))
+        timeline.tag_bind(self.name, '<ButtonPress-1>', lambda x: showInfo(x, self.name))
+
+
 def sortData():
     global timelineData
     kl = list(timelineData.keys())
@@ -52,6 +65,7 @@ def do_popup(event, popup):
         popup.grab_release()
 
 def addDate(day, month, year, name, e4, root, timeline, width, height):
+    global timelineData
     dval = day.get()
     mval = month.get()
     yval = year.get()
@@ -62,19 +76,22 @@ def addDate(day, month, year, name, e4, root, timeline, width, height):
     elif(mval == 'Unknown'):
         addRange()
     else:
-        new = EventS(nval, dval, mval, yval, ival, [])
+        globals()[nval] = EventS(nval, dval, mval, yval, ival, [])
+    timelineData[nval] = globals()[nval].info
     save()
     refresh(timeline, width, height)
 
 def subAdd(root, timeline, width, height):
     def checkE(e1, e2, e3, e0, e4, root, timeline, width, height):
-        empty = True
         if(e1.get()=='00' or e2.get()=='' or e3.get()=='0000' or e0.get()==''):
             pass
         elif(int(e1.get()) not in days or int(e3.get()) not in years or e2.get() not in months):
             pass
         else:
-            addDate(e1, e2, e3, e0, e4, root, timeline, width, height)
+            try:
+                int(e0.get())
+            except ValueError:
+                addDate(e1, e2, e3, e0, e4, root, timeline, width, height)
     dateR = Tk()
     l0 = Label(dateR, text='Enter Name:   ')
     l1 = Label(dateR, text='Enter Day:   ')
@@ -103,14 +120,32 @@ def subAdd(root, timeline, width, height):
     dateR.mainloop()
 
 def refresh(timeline, width, height):
+    global side, dateObjs
     timeline.delete("date")
     for i in timelineData:
         r = timelineData[i]['rat']
         xc = 10 + (r*(width-20))
         y1 = (height//2)-4
         y2 = (height//2)+4
-        point = timeline.create_oval(xc-4, y1, xc+4, y2, fill='black', activefill='red', tags=('date'))
-        txt = timeline.create_text(xc, y1-25, anchor='w', text=i, angle=90, tags=('date'))
+        if side == True:
+            interval = y1-25
+            anchor = 'w'
+        else:
+            interval = y2+25
+            anchor = 'e'
+        globals()[i].draw_point(xc, y1, y2, i, timeline)
+        globals()[i].draw_txt(xc, interval, anchor, i, timeline)
+        side = not side
+    side = True
+
+def showInfo(event, tag):
+    canvas = event.widget
+    itemID = canvas.find_withtag(tag)[0]
+    itemName = canvas.gettags(itemID)[1]
+    item = globals()[itemName]
+    info = item.eInfo
+    print(info)
+    
 
 def check_data():
     global timelineData
@@ -140,12 +175,17 @@ def clear(timeline, width, height):
     clearW.mainloop()
 
 def main():
+
     root = Tk()
     root.geometry('800x500')
 
     root.update()
     width = root.winfo_width()
     height = root.winfo_height()
+
+    for i in timelineData:
+        d, m, y = timelineData[i]['date'].split('/')
+        globals()[i] = EventS(i, d, m, y, timelineData[i]['info'], timelineData[i]['tags'])
 
     popup = Menu(root, tearoff=0)
     popup.add_command(label="Add Date", command= lambda: subAdd(root, timeline, width, height))
@@ -172,6 +212,7 @@ days = ['Unknown'] + [i for i in range(1,32)]
 months = ['Unknown','January', 'February', 'March', 'April', 'May', 'June',
  'July', 'August', 'September', 'October', 'November', 'December']
 years = [i for i in range(1, 2021)]
+side = True
 check_data()
 main()
 
