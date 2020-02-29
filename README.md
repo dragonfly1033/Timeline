@@ -1,7 +1,7 @@
 # Timeline Maker
 
 - [x] Create Timelines
-- [ ] Edit Timelines
+- [x] Edit Timelines
 - [ ] Add Tags to dates to filter
 - [ ] Use ranges to access dates faster
 - [x] Show Dates position relative to time of event
