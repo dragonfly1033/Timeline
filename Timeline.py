@@ -22,22 +22,22 @@ def sortData():
     s.sort()
 
     timelineData = {kl[dl.index(i.strftime('%d/%B/%Y'))]: vl[dl.index(i.strftime('%d/%B/%Y'))] for i in s}
-
-    kl = list(timelineData.keys())
-    vl = list(timelineData.values())
-    s = [datetime.strptime(i['date'], '%d/%B/%Y') for i in timelineData.values()]
-    unwanted = [kl[0], kl[-1]]
-    newdict = {i: timelineData[i] for i in timelineData if i not in unwanted}
-    for i in unwanted:
-        timelineData[i]['rat'] = unwanted.index(i)
-    for i in newdict:
-        minn = min(s)
-        maxx = max(s)
-        cur = datetime.strptime(newdict[i]['date'], '%d/%B/%Y')
-        num = cur - minn
-        den = maxx - minn
-        rat = num/den
-        timelineData[i]['rat'] = rat
+    if(len(timelineData) >= 1):
+        kl = list(timelineData.keys())
+        vl = list(timelineData.values())
+        s = [datetime.strptime(i['date'], '%d/%B/%Y') for i in timelineData.values()]
+        unwanted = [kl[0], kl[-1]]
+        newdict = {i: timelineData[i] for i in timelineData if i not in unwanted}
+        for i in unwanted:
+            timelineData[i]['rat'] = unwanted.index(i)
+        for i in newdict:
+            minn = min(s)
+            maxx = max(s)
+            cur = datetime.strptime(newdict[i]['date'], '%d/%B/%Y')
+            num = cur - minn
+            den = maxx - minn
+            rat = num/den
+            timelineData[i]['rat'] = rat
 
 def save():
     sortData()
@@ -96,13 +96,14 @@ def subAdd(root, timeline, width, height):
     dateR.mainloop()
 
 def refresh(timeline, width, height):
+    timeline.delete("date")
     for i in timelineData:
         r = timelineData[i]['rat']
         xc = 10 + (r*(width-20))
         y1 = (height//2)-4
         y2 = (height//2)+4
-        point = timeline.create_oval(xc-4, y1, xc+4, y2, fill='black')
-        txt = timeline.create_text(xc, y1-25, anchor='w', text=i, angle=90)
+        point = timeline.create_oval(xc-4, y1, xc+4, y2, fill='black', activefill='red', tags=('date'))
+        txt = timeline.create_text(xc, y1-25, anchor='w', text=i, angle=90, tags=('date'))
 
 def check_data():
     global timelineData
@@ -116,6 +117,21 @@ def check_data():
             d = f.read()
             timelineData = loads(d)
 
+def clear(timeline, width, height):
+    def subc(timeline, width, height):
+        global timelineData
+        timelineData = {}
+        save()
+        refresh(timeline, width, height)
+    clearW=Tk()
+    ll= Label(clearW, text='Are you sure? ')
+    ll.pack()
+    bb = ttk.Button(clearW, text='Yes', command=lambda: subc(timeline, width, height))
+    bb.pack()
+    bl = ttk.Button(clearW, text='no', command=lambda: clearW.destroy())
+    bl.pack()
+    clearW.mainloop()
+
 def main():
     root = Tk()
     root.geometry('800x500')
@@ -127,6 +143,8 @@ def main():
     popup = Menu(root, tearoff=0)
     popup.add_command(label="Add Date", command= lambda: subAdd(root, timeline, width, height))
     popup.add_command(label="Add Range")
+    popup.add_command(label="Clear", command=lambda: clear(
+        timeline, width, height))
     popup.add_command(label="Help")
 
     timeline = Canvas(root, bg='light grey', width=width, height=height)
