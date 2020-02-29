@@ -67,6 +67,14 @@ def addDate(day, month, year, name, e4, root, timeline, width, height):
     refresh(timeline, width, height)
 
 def subAdd(root, timeline, width, height):
+    def checkE(e1, e2, e3, e0, e4, root, timeline, width, height):
+        empty = True
+        if(e1.get()=='00' or e2.get()=='' or e3.get()=='0000' or e0.get()==''):
+            pass
+        elif(int(e1.get()) not in days or int(e3.get()) not in years or e2.get() not in months):
+            pass
+        else:
+            addDate(e1, e2, e3, e0, e4, root, timeline, width, height)
     dateR = Tk()
     l0 = Label(dateR, text='Enter Name:   ')
     l1 = Label(dateR, text='Enter Day:   ')
@@ -80,17 +88,16 @@ def subAdd(root, timeline, width, height):
     l4.grid(row=4, column=0)
 
     e0 = Entry(dateR, width=24)
-    e1 = ttk.Combobox(dateR, values=[i for i in range(1, 32)])
+    e1 = ttk.Combobox(dateR, values=days)
     e2 = ttk.Combobox(dateR, values=months)
-    e3 = ttk.Combobox(dateR, values=[i for i in range(1, 2021)])
+    e3 = ttk.Combobox(dateR, values=years)
     e4 = Text(dateR, width=50, height=10)
     e0.grid(row=0, column=1)
     e1.grid(row=1, column=1)
     e2.grid(row=2, column=1)
     e3.grid(row=3, column=1)
     e4.grid(row=4, column=1, padx=25, pady=10)
-    b1 = ttk.Button(dateR, text='Add', width=42, command=lambda: addDate(
-        e1, e2, e3, e0, e4, root, timeline, width, height))
+    b1 = ttk.Button(dateR, text='Add', width=42, command=lambda: checkE(e1, e2, e3, e0, e4, root, timeline, width, height))
     b1.grid(row=5, columnspan=2, pady=10)
 
     dateR.mainloop()
@@ -161,8 +168,10 @@ def main():
 
 
 timelineData = {}
-months = ['January', 'February', 'March', 'April', 'May', 'June',
+days = ['Unknown'] + [i for i in range(1,32)]
+months = ['Unknown','January', 'February', 'March', 'April', 'May', 'June',
  'July', 'August', 'September', 'October', 'November', 'December']
+years = [i for i in range(1, 2021)]
 check_data()
 main()
 
