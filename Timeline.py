@@ -3,6 +3,7 @@ from tkinter import ttk
 from datetime import datetime, timedelta
 from json import dumps, loads
 from os import popen, path
+from re import findall
 
 class EventS:
     def __init__(self, eName, day, month, year, eInfo, Tags):
@@ -94,8 +95,10 @@ def subAdd(root, timeline, width, height):
                 int(e0.get())
             except ValueError:
                 s = e5.get()
-                ss = str(s.split(',')).replace('[','').replace(']','').replace("'",'')
-                if(ss == s and ss != ''):
+                inter = s.replace(']','').replace('[','').replace(' ,',',').replace(', ',',').split(',')
+                if(inter == s):
+                    pass
+                elif(0 in [len(re.findall('\S', i)) for i in inter] and inter != ['']):
                     pass
                 else:
                     addDate(e1, e2, e3, e0, e4, root, timeline, width, height, e5)
@@ -160,7 +163,7 @@ def showInfo(event, tag):
     itemID = canvas.find_withtag(tag)[0]
     itemName = canvas.gettags(itemID)[1]
     item = globals()[itemName]
-    tags=str(item.Tags).replace('[', '').replace(']','')
+    tags=str(item.Tags).replace('[', '').replace(']','').replace("'",'')
     curShowName = item.eName
     setText(nameShow, item.eName)
     setText(dateShow, item.Date)
@@ -204,8 +207,14 @@ def main():
                 t1, t2, t3= dateShow.get().split('/')
             except:
                 t1, t2, t3 = '','',''
+            t4 = infoShow
             t5=tagsShow
-            if(t1=='00' or t2=='' or t3=='0000' or t0.get()=='' or t1=='' or t3==''):
+            if(t0.get()=='' and t1=='' and t2=='' and t3=='' and t4.get()=='' and t5.get()==''):
+                del timelineData[curShowName]
+                del globals()[curShowName]
+                save()
+                refresh(timeline, width, height)
+            elif(t1=='00' or t2=='' or t3=='0000' or t0.get()=='' or t1=='' or t3==''):
                 pass
             elif(int(t1) not in days or int(t3) not in years or t2 not in months):
                 pass
@@ -214,8 +223,10 @@ def main():
                     int(t0.get())
                 except ValueError:
                     s = t5.get()
-                    ss = str(s.split(',')).replace('[','').replace(']','').replace("'",'')
-                    if(ss == s and ss != ''):
+                    inter = s.replace(']','').replace('[','').replace(' ,',',').replace(', ',',').split(',')
+                    if(inter == s):
+                        pass
+                    elif(0 in [len(re.findall('\S', i)) for i in inter] and inter != ['']):
                         pass
                     else:
                         name = nameShow.get()
