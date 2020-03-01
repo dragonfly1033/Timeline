@@ -36,7 +36,7 @@ def sortData():
     s.sort()
 
     timelineData = {kl[dl.index(i.strftime('%d/%B/%Y'))]: vl[dl.index(i.strftime('%d/%B/%Y'))] for i in s}
-    if(len(timelineData) >= 1):
+    if(len(timelineData) > 0):
         kl = list(timelineData.keys())
         vl = list(timelineData.values())
         s = [datetime.strptime(i['date'], '%d/%B/%Y') for i in timelineData.values()]
