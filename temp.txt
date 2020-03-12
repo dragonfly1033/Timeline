@@ -1,0 +1,13 @@
+coords=[0,1,3,6,8]
+srats=[(i/8) for i in coords]
+sf=1.5
+mid=coords[(len(coords)-1)//2]
+difs=[]
+newCoords=[]
+for i in coords: difs.append((mid-i)*sf)
+for i in difs: 
+  if (mid-i)>=0 and (mid-i)<=8: 
+    newCoords.append(mid-i)
+erats=[(i/8) for i in newCoords]
+print(newCoords, srats, erats)
+#:::::::::::::::::::::::::::::::::ZOOM SCALE::::::::::::::::::::::::::::::#
