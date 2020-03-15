@@ -1,13 +1,76 @@
-coords=[0,1,3,6,8]
-srats=[(i/8) for i in coords]
-sf=1.5
-mid=coords[(len(coords)-1)//2]
-difs=[]
-newCoords=[]
-for i in coords: difs.append((mid-i)*sf)
-for i in difs: 
-  if (mid-i)>=0 and (mid-i)<=8: 
-    newCoords.append(mid-i)
-erats=[(i/8) for i in newCoords]
-print(newCoords, srats, erats)
-#:::::::::::::::::::::::::::::::::ZOOM SCALE::::::::::::::::::::::::::::::#
+from tkinter import *
+from tkinter import ttk
+from tkinter import colorchooser, scrolledtext
+
+
+def togglesidebar():
+    global sidebar, sidebarPI, sidebarout
+    if(sidebarout):
+        sidebarPI = sidebar.place_info()
+        sidebar.place_forget()
+    else:
+        sidebar.place(sidebarPI)
+        sidebar.lift(canvas)
+        for i in range(131):
+            sidebar.update()
+            sidebar.place(x=0, y=600-i, anchor='nw')
+    sidebarout = not sidebarout
+
+def getRGB(r, g, b):
+    rgb = (r, g, b)
+    return "#%02x%02x%02x" % rgb   
+
+
+def temp():
+    print('hey')
+
+DGREY = getRGB(45, 45, 43)
+GREY = getRGB(76, 76, 71)
+RED = getRGB(193, 73, 83)
+WHITE = getRGB(255, 255, 153)
+
+
+sidebarout = True
+
+root = Tk()
+root.geometry('1020x600')
+
+menubar = Menu(root)
+
+menubar.add_command(label='Add', command=lambda: togglesidebar())
+menubar.add_command(label='Tree', command=lambda: temp())
+menubar.add_command(label='Help', command=lambda: temp())
+
+sidebar = Frame(root, width=1020, height=130, bg=DGREY)
+sidebar.place(x=0, y=600, anchor='nw')
+sidebar.grid_propagate(0)
+
+namelabel = Label(sidebar, text='Name:', bg=RED, font="Helvetica 17")
+namelabel.grid(row=0, column=0, sticky='we', padx=4, pady=4)
+datelabel = Label(sidebar, text='Date:', bg=RED, font="Helvetica 17")
+datelabel.grid(row=1, column=0, sticky='we', padx=4, pady=4)
+tagslabel = Label(sidebar, text='Tags:', bg=RED, font="Helvetica 17")
+tagslabel.grid(row=2, column=0, sticky='we', padx=4, pady=4)
+infolabel = Label(sidebar, text='Info: ', bg=RED, font="Helvetica 17")
+infolabel.grid(row=0, column=4, sticky='wens', padx=4, pady=4)
+
+nameentry = Entry(sidebar, width=44, borderwidth=0, highlightthickness=0, font="Helvetica 17", bg=GREY)
+nameentry.grid(row=0, column=1, columnspan=3, padx=4, pady=4)
+dayentry = ttk.Combobox(sidebar, width=12, values=[i for i in range(1,32)], font="Helvetica 17")
+dayentry.grid(row=1, column=1, padx=4, pady=4)
+monthentry = ttk.Combobox(sidebar, width=12, values=['J','F','M','A','My','Jn','Jl','Ag','S','O','N','D'], font="Helvetica 17")
+monthentry.grid(row=1, column=2, padx=4, pady=4)
+yearentry = ttk.Combobox(sidebar, width=12, values=[i for i in range(1000,2021)], font="Helvetica 17")
+yearentry.grid(row=1, column=3, padx=4, pady=4)
+tagsentry = Entry(sidebar, width=44, borderwidth=0, highlightthickness=0, font="Helvetica 17", bg=GREY)
+tagsentry.grid(row=2, column=1, columnspan=3, padx=4, pady=4)
+infoentry = scrolledtext.ScrolledText(sidebar, width=25, height=3, wrap=WORD, font="Helvetica 17", bg=GREY)
+infoentry.grid(row=1, column=4, rowspan=2, sticky='we', padx=4, pady=4)
+
+
+canvas = Canvas(root, bg=GREY, bd=0, highlightthickness=0, width=1020, height=600)
+canvas.place(x=0, y=0, anchor='nw')
+
+togglesidebar()
+root.config(menu=menubar)
+root.mainloop()
