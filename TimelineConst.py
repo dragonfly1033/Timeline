@@ -1,4 +1,5 @@
 curShowName = ''
+verLineHeight = 25
 DAYS = ['Unknown'] + [i for i in range(1,32)]
 MONTHS = ['Unknown','January', 'February', 'March', 'April', 'May', 'June',
  'July', 'August', 'September', 'October', 'November', 'December']

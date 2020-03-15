@@ -7,6 +7,35 @@ from re import findall
 import TimelineConst
 #t0, t1, t2, t3, t4, t5  ==== name, day, month, year, info, tags
 
+class ToggledFrame(Frame):
+
+    def __init__(self, parent, gr, gc, text="", *args, **options):
+        #Frame.__init__(self, parent, *args, **options)
+        self.frame = Frame(parent, *args, **options)
+        #self.frame.pack_propagate(0)
+        self.frame.grid(row=gr, column=gc)
+
+        self.show = IntVar()
+        self.show.set(0)
+
+        self.title_frame = Frame(self.frame, *args, **options)
+        self.title_frame.pack(fill="x", expand=1)
+
+        Label(self.title_frame, text=text).pack(side="left", fill="x", expand=1)
+
+        self.toggle_button = ttk.Checkbutton(self.title_frame, width=19, text='         +         ', command=self.toggle,
+                                            variable=self.show, style='Toolbutton')
+        self.toggle_button.pack(side="left")
+
+        self.sub_frame = Frame(self.frame, relief="sunken", borderwidth=1)
+
+    def toggle(self):
+        if bool(self.show.get()):
+            self.sub_frame.pack(fill="x", expand=1)
+            self.toggle_button.configure(text='         -         ')
+        else:
+            self.sub_frame.forget()
+            self.toggle_button.configure(text='         +         ')
 
 class EventS:
     def __init__(self, name, day, month, year, info, tags):
@@ -29,9 +58,19 @@ class EventS:
         self.txt = timeline.create_text(xc, interval, activefill='red', fill='black', anchor=anchor, text=self.name, angle=90, tags=('date', str(self.name)))
         timeline.tag_bind(self.name, '<ButtonPress-1>', lambda x: showInfo(x, self.name))
 
+    def draw_verLine(self, xc, yc, yc2, i):
+        self.yc = yc
+        self.yc2 = yc2
+        self.verLine = timeline.create_line(xc, yc, xc, yc2, fill='black', activefill='red', width=3, tags=('date', str(self.name)))
+        timeline.tag_bind(self.name, '<ButtonPress-1>', lambda x: showInfo(x, self.name))
+    
+    def getRat(self, rat):
+        self.rat = rat
+
+
 def setText(wid, text):
-    wid.delete(0, END)
-    wid.insert(0, text)
+    wid.delete('1.0', END)
+    wid.insert('1.0', text)
 
 def do_popup(event, popup):
     try:
@@ -49,6 +88,7 @@ def getRatio():
         newdict = {i: timelineData[i] for i in timelineData if i not in unwanted}
         for i in unwanted:
             timelineData[i]['rat'] = unwanted.index(i)
+            globals()[i].getRat(unwanted.index(i))
         for i in newdict:
             minn = min(s)
             maxx = max(s)
@@ -57,12 +97,14 @@ def getRatio():
             den = maxx - minn
             rat = num/den
             timelineData[i]['rat'] = rat
+            globals()[i].getRat(rat)
 
 def sortData():
     global timelineData
     kl = list(timelineData.keys())
     vl = list(timelineData.values())
     dl = [timelineData[i]['date'] for i in timelineData]
+    for i in timelineData.values(): print(f":{i['date']}:")#, datetime.strptime(i['date'], '%d/%B/%Y'))
     s = [datetime.strptime(i['date'], '%d/%B/%Y') for i in timelineData.values()]
     s.sort()
 
@@ -77,15 +119,7 @@ def save():
         f.write(d)
 
 def validate(t0, t1, t2, t3, t4, t5):
-    try:
-        t0=t0.get()
-        t1=t1.get()
-        t2=t2.get()
-        t3=t3.get()
-        t4=t4.get('1.0', END)
-        t5=list(t5.get().split(','))
-    except AttributeError:
-        pass
+
     typefail=False
     try:
         int(t1)
@@ -103,7 +137,7 @@ def validate(t0, t1, t2, t3, t4, t5):
             int(t0)
         except ValueError:
             s = str(t5)
-            inter = s.replace(']','').replace('[','').replace(' ,',',').replace(', ',',').split(',')
+            inter = s.replace(']','').replace('[','').replace(' ,',',').replace(', ',',').replace('\n','').split(',')
             if(inter == s):
                 pass
             elif(0 in [len(re.findall('\S', i)) for i in inter] and inter != ['']):
@@ -116,22 +150,22 @@ def manSave():
     global timelineData
     t0=nameShow
     try:
-        t1, t2, t3= dateShow.get().split('/')
+        t1, t2, t3= dateShow.get('1.0', END).replace('\n','').split('/')
     except:
         t1, t2, t3 = '','',''
     t4 = infoShow
     t5=tagsShow
-    if(t0.get()=='' and t1=='' and t2=='' and t3=='' and t4.get()=='' and t5.get()==''):
+    if(t0.get('1.0', END)=='' and t1=='' and t2=='' and t3=='' and t4.get('1.0', END)=='' and t5.get('1.0', END)==''):
         del timelineData[TimelineConst.curShowName]
         del globals()[TimelineConst.curShowName]
         save()
         refresh()
-    elif(validate(t0, t1, t2, t3, t4, t5)):
-        name = nameShow.get()
-        date = dateShow.get()
-        tags = list(tagsShow.get().split(','))
+    elif(validate(t0.get('1.0', END), t1, t2, t3, t4.get('1.0', END), list(t5.get('1.0', END).split(',')))):
+        name = nameShow.get('1.0', END)
+        date = dateShow.get('1.0', END).replace('\n','')
+        tags = list(tagsShow.get('1.0',END).replace('\n','').split(','))
         if(tags == ['']): tags = []
-        info = infoShow.get()
+        info = infoShow.get('1.0', END)
         d, m, y= date.split('/')
         del timelineData[TimelineConst.curShowName]
         del globals()[TimelineConst.curShowName]
@@ -146,7 +180,7 @@ def manSave():
 
 def confirm(cfunc, *args):
     saveW=Tk()
-    saveW.title('Save?')
+    saveW.title('Confirm')
     ll= Label(saveW, text='Are you sure? ')
     ll.pack()
     bb = ttk.Button(saveW, text='Yes', command=lambda: cfunc(*args))
@@ -162,14 +196,18 @@ def refresh():
         xc = 10 + (r*(width-20))
         y1 = (height//2)-4
         y2 = (height//2)+4
+        ly1 = (height//2)
         if TimelineConst.SIDE == True:
             interval = y1-25
             anchor = 'w'
+            ly2 = (height//2)-TimelineConst.verLineHeight
         else:
             interval = y2+25
             anchor = 'e'
+            ly2 = (height//2)+TimelineConst.verLineHeight
         globals()[i].draw_point(xc, y1, y2, i)
         globals()[i].draw_txt(xc, interval, anchor, i)
+        globals()[i].draw_verLine(xc, ly1, ly2, i)
         TimelineConst.SIDE = not TimelineConst.SIDE
     TimelineConst.SIDE = True
 
@@ -198,7 +236,7 @@ def addFunc(name, day, month, year, info, tags):
 
 def addGUI():
     def ifValid(t0, t1, t2, t3, t4, t5):
-        if(validate(t0, t1, t2, t3, t4, t5)):
+        if(validate(t0.get(), t1.get(), t2.get(), t3.get(), t4.get('1.0', END), list(t5.get().split(',')))):
             addFunc(t0, t1, t2, t3, t4, t5)
     dateR = Tk()
     l0 = Label(dateR, text='Enter Name:        ')
@@ -251,6 +289,7 @@ def clear():
 
 #INIT DATA:::::::::::::::::::::::::::
 timelineData = {}
+points=[]
 #CHECK JSON ::::::::::::::::::::::::::::
 folder = popen('chdir').read().strip('\n')
 if(not path.exists(folder+ r'\timelineData.json')):
@@ -266,12 +305,13 @@ else:
 root = Tk()
 
 root.update()
-width = 800
+width = 1040
 height = 500
 
 for i in timelineData:
     d, m, y = timelineData[i]['date'].split('/')
     globals()[i] = EventS(i, d, m, y, timelineData[i]['info'], timelineData[i]['tags'])
+    points.append(globals()[i])
 
 popup = Menu(root, tearoff=0)
 popup.add_command(label="Add Date", command= lambda: addGUI())
@@ -279,13 +319,48 @@ popup.add_command(label="Add Range")
 popup.add_command(label="Clear", command=lambda: confirm(clear))
 popup.add_command(label="Help")
 
+def dozoom(event):
+
+    coords=[i.xc for i in points]
+    coords.sort()
+    srats=[i.rat for i in points]
+    sf=1.001**event.delta
+
+    absolute_difference_function = lambda list_value : abs(list_value - event.x)
+    mid = min(coords, key=absolute_difference_function)
+    print(timeline.itemcget(points[coords.index(mid)], option='text'))
+    difs=[]
+    newCoords=[]
+    for i in coords: difs.append((mid-i)*sf)
+    for i in difs: 
+        #if (mid-i)>=0 and (mid-i)<=8: 
+        newCoords.append(mid-i)
+    erats=[(i-10)/580 for i in newCoords]
+    for i in range(len(points)):
+        #print(points[i])
+        points[i].xc=newCoords[i]
+        points[i].rat=erats[i]
+        timeline.coords(points[i].point, newCoords[i]-4,points[i].y1,newCoords[i]+4,points[i].y2)
+        timeline.coords(points[i].txt, newCoords[i],points[i].interval)
+        timeline.coords(points[i].verLine, newCoords[i],points[i].yc,newCoords[i],points[i].yc2)
+        
+
+def scroll_start(event):
+    timeline.scan_mark(event.x, event.y)
+def scroll(event):
+    timeline.scan_dragto(event.x, event.y, gain=1)
+
 timeline = Canvas(root, bg='light grey', width=width, height=height)
 timeline.grid(row=0, column=0)
+timeline.bind('<MouseWheel>', dozoom)
+timeline.bind('<ButtonPress-1>', scroll_start)
+timeline.bind('<B1-Motion>', scroll)
 
 buffer1 = timeline.create_line(10, height//2 + 20, 10, height//2 - 20, fill='black', width='3')
 line = timeline.create_line(10, height//2, width-10, height//2, fill='black', width='3')
 buffer2 = timeline.create_line(width-10, height//2 + 20, width-10, height//2 - 20, fill='black', width='3')
 
+getRatio()
 refresh()
 
 infoBox = Frame(root, width = 800, height = 250, bg='blue')
@@ -301,13 +376,15 @@ tagsLabel.grid(row=2 , column=0)
 infoLabel = Label(infoBox, text='Info: ', width = 10, relief='ridge')
 infoLabel.grid(row=3 , column=0)
 
-nameShow = Entry(infoBox, text='', width = 120, relief='ridge')
-nameShow.grid(row=0 , column=1)    
-dateShow = Entry(infoBox, text='', width = 120, relief='ridge')
-dateShow.grid(row=1 , column=1)    
-tagsShow = Entry(infoBox, text='', width = 120, relief='ridge')
-tagsShow.grid(row=2 , column=1)    
-infoShow = Entry(infoBox, text='', width = 120, relief='ridge')
+nameShow = Text(infoBox, width = 120, relief='ridge', height=1)
+nameShow.grid(row=0 , column=1, pady=1, padx=1)    
+dateShow = Text(infoBox, width = 120, relief='ridge', height=1)
+dateShow.grid(row=1 , column=1, pady=1, padx=1)    
+tagsShow = Text(infoBox, width = 120, relief='ridge', height=1)
+tagsShow.grid(row=2 , column=1, pady=1, padx=1)    
+info_collapse = ToggledFrame(infoBox, 3, 1, text=' '*153+'Info'+' '*120, width=962, height=16)
+#info_collapse.grid(row=3 , column=1)
+infoShow = Text(info_collapse.sub_frame, width = 120, relief='ridge', height=10)
 infoShow.grid(row=3 , column=1)
 
 saveBut = ttk.Button(infoBox, text='Save', command= lambda: confirm(manSave), width=107)
