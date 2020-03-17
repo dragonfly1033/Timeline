@@ -1,67 +1,138 @@
 from tkinter import *
+
 from tkinter import ttk
+
 from tkinter import scrolledtext
 
+
+
 class Page(Frame):
+
     def __init__(self, parent, name):
+
         Frame.__init__(self, parent)
+
         note.add(self, text=name)
 
 
 def buildAdd():
+
     def showSlider():
-        monthE.configure(showvalue=months[int(monthE.get())-1])
+        val = monthE.get()
+        nval = round(val)
+        nnval = months[nval-1]
+        tx = ((val - 1) / 11) * (500 - 12) + 12 / 2
+
+
 
     subback = Label(sub, image=backimg, bg='white')
+    subback.image = backimg
     subback.pack(fill='both', expand=True)
 
+
+
     nameE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
+
     nameE.place(x=90,y=140)
 
+
+
     dayE = Entry(subback, width=37, font=FONT, relief='flat', bg='white', fg=GREY)
+
     dayE.place(x=90,y=211)
 
+
+    scaleframe = Frame(subback, bg='blue', width=10, height=10)
+    scaleframe.pack(expand=True)
+    #scaleframe.place(x=80, y=305)
     V = IntVar()
-    monthE = Scale(subback, orient=HORIZONTAL, bg='white', bd=0, font=FONT, from_=1, to=12, variable=V, relief='flat', tickinterval=1, length=400, command=lambda x: showSlider())
-    monthE.place(x=158,y=250)
+    scaleStyle = ttk.Style()
+    scaleStyle.configure('Horizontal.TScale', background='white')
+
+    monthE = ttk.Scale(scaleframe, orient=HORIZONTAL, from_=1, to=12, value=1,
+     variable=V, length=500, command=lambda x: showSlider(), style='Horizontal.TScale')
+
+    monthE.place(x=0,y=0)
+    showval = Label(scaleframe, text='January')
+    showval.place(x=0,y=0)
+
 
     yearE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
+
     yearE.place(x=90,y=354)
 
+
+
     tagsE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
+
     tagsE.place(x=88,y=422)
 
+
+
     infoE = scrolledtext.ScrolledText(subback, width=16, height=9, font=('Bahnschrift Light', 18), relief='flat', bg='white', fg=GREY)
+
     infoE.place(x=702, y=182)
 
+
+
 def buildMain():
+
     c.create_line(0,300,1020,300, fill='black', width=3)
 
+
+
 GREY = '#7f7f7f'
+
 FONT = ('Bahnschrift Light', 18)
+
 months=['January', 'February', 'March', 'April', 'May', 'June',
+
  'July', 'August', 'September', 'October', 'November', 'December']
 
+
+
 root = Tk()
+
 root.geometry('1020x600')
 
+
+
 note =  ttk.Notebook(root, padding=0)
+
 note.pack(fill='both', expand=True)
 
+
+
 main = Page(note, 'Main')
+
 sub = Page(note, 'Sub')
+
 subsub = Page(note, 'sub sub')
 
-backimg = PhotoImage(file='C:\\Users\\3664\\python\\TEST\\AddDateTest.png')
+
+
+backimg = PhotoImage(file='C:\\Users\\aumsh\\Shrey HW\\AddDateTest.png')
+
+
+
 
 
 c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
+
 c.pack(fill='both', expand=True)
 
+
+
 buildMain()
+
 buildAdd()
 
+
+
 t = Label(subsub, text='why')
+
 t.pack()
+
+
 
 root.mainloop()
