@@ -1,172 +1,67 @@
 from tkinter import *
-
 from tkinter import ttk
+from tkinter import scrolledtext
 
-from tkinter import colorchooser, scrolledtext
-
-
-
-
-
-def togglesidebar():
-
-    global sidebar, sidebarPI, sidebarout, sideline, sidelinePI
-
-    if(sidebarout):
-
-        sidebarPI = sidebar.place_info()
-
-        sidebar.place_forget()
-
-        sidelinePI = sideline.place_info()
-
-        sideline.place_forget()
-
-    else:
-
-        sidebar.place(sidebarPI)
-
-        sidebar.lift(canvas)
-
-        sideline.place(sidelinePI)
-
-        sideline.lift(canvas)
-
-        for i in range((130//2)+1):
-
-            sidebar.update()
-            sideline.update()
-            sidebar.place(x=0, y=602-(i*2), anchor='nw')
-            sideline.place(x=0, y=600-(i*2), anchor='nw')
-
-    sidebarout = not sidebarout
+class Page(Frame):
+    def __init__(self, parent, name):
+        Frame.__init__(self, parent)
+        note.add(self, text=name)
 
 
+def buildAdd():
+    def showSlider():
+        monthE.configure(showvalue=months[int(monthE.get())-1])
 
-def temp():
+    subback = Label(sub, image=backimg, bg='white')
+    subback.pack(fill='both', expand=True)
 
-    print('hey')
+    nameE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
+    nameE.place(x=90,y=140)
 
+    dayE = Entry(subback, width=37, font=FONT, relief='flat', bg='white', fg=GREY)
+    dayE.place(x=90,y=211)
 
+    V = IntVar()
+    monthE = Scale(subback, orient=HORIZONTAL, bg='white', bd=0, font=FONT, from_=1, to=12, variable=V, relief='flat', tickinterval=1, length=400, command=lambda x: showSlider())
+    monthE.place(x=158,y=250)
 
-RED = '#a22c29'
-BLUE = '#0b132b'
-WHITE = '#f2f5ea'
-GREY = '#b9baa3'
-LGREY = '#d6d5c9'
+    yearE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
+    yearE.place(x=90,y=354)
 
+    tagsE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
+    tagsE.place(x=88,y=422)
 
+    infoE = scrolledtext.ScrolledText(subback, width=16, height=9, font=('Bahnschrift Light', 18), relief='flat', bg='white', fg=GREY)
+    infoE.place(x=702, y=182)
 
-sidebarout = True
+def buildMain():
+    c.create_line(0,300,1020,300, fill='black', width=3)
 
-
+GREY = '#7f7f7f'
+FONT = ('Bahnschrift Light', 18)
+months=['January', 'February', 'March', 'April', 'May', 'June',
+ 'July', 'August', 'September', 'October', 'November', 'December']
 
 root = Tk()
-
 root.geometry('1020x600')
 
+note =  ttk.Notebook(root, padding=0)
+note.pack(fill='both', expand=True)
+
+main = Page(note, 'Main')
+sub = Page(note, 'Sub')
+subsub = Page(note, 'sub sub')
+
+backimg = PhotoImage(file='C:\\Users\\3664\\python\\TEST\\AddDateTest.png')
 
 
-menubar = Menu(root)
+c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
+c.pack(fill='both', expand=True)
 
+buildMain()
+buildAdd()
 
-
-menubar.add_command(label='Add', command=lambda: togglesidebar())
-
-menubar.add_command(label='Tree', command=lambda: temp())
-
-menubar.add_command(label='Help', command=lambda: temp())
-
-
-sideline = Frame(root, width=1020, height=2, bg=RED)
-sideline.place(x=0, y=600, anchor='nw')
-
-sidebar = Frame(root, width=1020, height=130, bg=WHITE)
-
-sidebar.place(x=0, y=602, anchor='nw')
-
-sidebar.grid_propagate(0)
-
-
-
-# namelabel = Label(sidebar, text='Name:', bg=LGREY, fg=DGREY, font="Helvetica 17")
-
-# namelabel.grid(row=0, column=0, sticky='we', padx=4, pady=4)
-
-# datelabel = Label(sidebar, text='Date:', bg=LGREY, fg=DGREY, font="Helvetica 17")
-
-# datelabel.grid(row=1, column=0, sticky='we', padx=4, pady=4)
-
-# tagslabel = Label(sidebar, text='Tags:', bg=LGREY, fg=DGREY, font="Helvetica 17")
-
-# tagslabel.grid(row=2, column=0, sticky='we', padx=4, pady=4)
-
-infolabel = Label(sidebar, text='Info: ', bg=WHITE, fg=BLUE, font="Helvetica 17", relief='solid')
-
-infolabel.grid(row=0, column=4, sticky='wens', padx=4, pady=2)
-
-
-nameentryframe=Frame(sidebar, highlightthickness=2, highlightbackground=BLUE)
-nameentryframe.grid(row=0, column=1, columnspan=3, padx=4, pady=4)
-nameentry = Entry(nameentryframe, width=44, borderwidth=0, highlightthickness=0, bg=WHITE, font="Helvetica 17")
-nameentry.pack()
-
-dayentryframe = Frame(sidebar, highlightthickness=2, highlightbackground=BLUE)
-dayentry = ttk.Combobox(dayentryframe, width=12, values=[i for i in range(1,32)], background=WHITE, font="Helvetica 17")
-dayentryframe.grid(row=1, column=1, padx=4, pady=4)
-dayentry.pack()
-
-monthentryframe = Frame(sidebar, highlightthickness=2, highlightbackground=BLUE)
-monthentry = ttk.Combobox(monthentryframe, width=12, values=['J','F','M','A','My','Jn','Jl','Ag','S','O','N','D'], background=WHITE, font="Helvetica 17")
-monthentryframe.grid(row=1, column=2, padx=4, pady=4)
-monthentry.pack()
-
-yearentryframe = Frame(sidebar, highlightthickness=2, highlightbackground=BLUE)
-yearentry = ttk.Combobox(yearentryframe, width=12, values=[i for i in range(1000,2021)], background=WHITE, font="Helvetica 17")
-yearentryframe.grid(row=1, column=3, padx=4, pady=4)
-yearentry.pack()
-
-tagsentryframe = Frame(sidebar, highlightthickness=2, highlightbackground=BLUE)
-tagsentry = Entry(tagsentryframe, width=44, borderwidth=0, highlightthickness=0, bg=WHITE, font="Helvetica 17", relief='solid')
-tagsentryframe.grid(row=2, column=1, columnspan=3, padx=4, pady=4)
-tagsentry.pack()
-
-infoentryframe = Frame(sidebar, highlightthickness=2, highlightbackground=BLUE)
-infoentryframe.grid(row=1, column=4, rowspan=2, sticky='we', padx=4, pady=1)
-infoentry = scrolledtext.ScrolledText(infoentryframe, width=25, height=3, wrap=WORD, bg=WHITE, font="Helvetica 17", relief='flat')
-infoentry.pack()
-
-def clear(wid):
-    wid.configure(foreground=BLUE)
-    wid.delete(0,END)
-
-nameentry.configure(fg=GREY)
-dayentry.configure(foreground=GREY)
-monthentry.configure(foreground=GREY)
-yearentry.configure(foreground=GREY)
-tagsentry.configure(fg=GREY)
-
-nameentry.insert(0,'Name')
-dayentry.insert(0,'Day')
-monthentry.insert(0,'Month')
-yearentry.insert(0,'Year')
-tagsentry.insert(0,'Tags')
-
-nameentry.bind('<Button-1>', lambda x: clear(nameentry))
-dayentry.bind('<Button-1>', lambda x: clear(dayentry))
-monthentry.bind('<Button-1>', lambda x: clear(monthentry))
-yearentry.bind('<Button-1>', lambda x: clear(yearentry))
-tagsentry.bind('<Button-1>', lambda x: clear(tagsentry))
-
-
-canvas = Canvas(root, bg=WHITE, bd=0, highlightthickness=0, width=1020, height=600)
-
-canvas.place(x=0, y=0, anchor='nw')
-
-
-
-togglesidebar()
-
-root.config(menu=menubar)
+t = Label(subsub, text='why')
+t.pack()
 
 root.mainloop()
