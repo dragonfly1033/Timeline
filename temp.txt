@@ -15,124 +15,114 @@ class Page(Frame):
         note.add(self, text=name)
 
 
-def buildAdd():
 
+def addDate(name, day, month, year, tags, info):
+    pass
+
+
+def buildAdd():
+    global r1, r2, nameE, dayE, monthE, yearE, tagsE, infoE, dayC, monthC
     def showSlider():
         val = monthE.get()
-        nval = round(val)
-        nnval = months[nval-1]
-        tx = ((val - 1) / 11) * (500 - 12) + 12 / 2
-
-
+        ind = round(val)
+        mon = months[ind]
+        nx = (val/11)*500
+        if(val<6):
+            an = 'sw'
+        elif(val>5):
+            an = 'se'
+        showval.place_configure(x=nx)
+        showval.configure(text=mon)
+        showval.place_configure(anchor=an)
+    def tempclear(wid):
+        if(wid not in es):
+            wid.delete(0,END)
+            es.append(wid)
+            
+    es=[]
 
     subback = Label(sub, image=backimg, bg='white')
     subback.image = backimg
     subback.pack(fill='both', expand=True)
 
-
-
-    nameE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
-
+    nameE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY, takefocus=False)
     nameE.place(x=90,y=140)
+    nameE.insert(0,'Name')
+    nameE.bind('<FocusIn>', lambda x: tempclear(nameE))
 
-
-
-    dayE = Entry(subback, width=37, font=FONT, relief='flat', bg='white', fg=GREY)
-
+    dayE = Entry(subback, width=37, font=FONT, relief='flat', bg='white', fg=GREY, takefocus=False)
     dayE.place(x=90,y=211)
-
-
-    scaleframe = Frame(subback, bg='blue', width=10, height=10)
-    scaleframe.pack(expand=True)
+    dayE.insert(0,'Day')
+    dayE.bind('<FocusIn>', lambda x: tempclear(dayE))
+    scaleframe = Frame(subback, bg='white', width=500, height=75)
+    scaleframe.place(x=80, y=283)
     #scaleframe.place(x=80, y=305)
     V = IntVar()
     scaleStyle = ttk.Style()
     scaleStyle.configure('Horizontal.TScale', background='white')
+    monthE = ttk.Scale(scaleframe, orient=HORIZONTAL, from_=0, to=11, value=1,
+     variable=V, length=500, command=lambda x: showSlider(), style='Horizontal.TScale', takefocus=False)
+    monthE.place(x=0,y=28)
+    showval = Label(scaleframe, text='January', bg='white', font=FONT, fg=GREY)
+    showval.place(x=0,y=28, anchor='sw')
 
-    monthE = ttk.Scale(scaleframe, orient=HORIZONTAL, from_=1, to=12, value=1,
-     variable=V, length=500, command=lambda x: showSlider(), style='Horizontal.TScale')
-
-    monthE.place(x=0,y=0)
-    showval = Label(scaleframe, text='January')
-    showval.place(x=0,y=0)
-
-
-    yearE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
-
+    yearE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY, takefocus=False)
     yearE.place(x=90,y=354)
+    yearE.insert(0,'Year')
+    yearE.bind('<FocusIn>', lambda x: tempclear(yearE))
 
-
-
-    tagsE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY)
-
+    tagsE = Entry(subback, width=42, font=FONT, relief='flat', bg='white', fg=GREY, takefocus=False)
     tagsE.place(x=88,y=422)
+    tagsE.insert(0,'Tags')
+    tagsE.bind('<FocusIn>', lambda x: tempclear(tagsE))
 
-
-
-    infoE = scrolledtext.ScrolledText(subback, width=16, height=9, font=('Bahnschrift Light', 18), relief='flat', bg='white', fg=GREY)
-
+    infoE = scrolledtext.ScrolledText(subback, width=16, height=9, 
+    font=('Bahnschrift Light', 18), relief='flat', bg='white', fg=GREY, takefocus=False)
     infoE.place(x=702, y=182)
 
+    CSt = ttk.Style()
+    CSt.configure('TCheckbutton', background='white')
+    CSt.configure('TCheckbutton', foreground=GREY)
+    r1 = BooleanVar()
+    dayC = ttk.Checkbutton(subback, variable=r1, takefocus=0)
+    dayC.place(x=638, y=242, anchor='e')
+
+    r2 = BooleanVar()
+    monthC = ttk.Checkbutton(subback, variable=r2, takefocus=0)
+    monthC.place(x=638, y=314, anchor='e')
+
+    saveB = Button(subback, text='Save', font=('Bahnschrift Light', 13), relief='flat', bg='white', 
+    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: addDate())
+    saveB.place(x=702, y=477)
 
 
 def buildMain():
-
     c.create_line(0,300,1020,300, fill='black', width=3)
 
-
-
 GREY = '#7f7f7f'
-
 FONT = ('Bahnschrift Light', 18)
-
 months=['January', 'February', 'March', 'April', 'May', 'June',
-
  'July', 'August', 'September', 'October', 'November', 'December']
 
-
-
 root = Tk()
-
 root.geometry('1020x600')
 
-
-
 note =  ttk.Notebook(root, padding=0)
-
 note.pack(fill='both', expand=True)
 
-
-
-main = Page(note, 'Main')
-
-sub = Page(note, 'Sub')
-
+main = Page(note, 'Timeline')
+sub = Page(note, 'Add Date')
 subsub = Page(note, 'sub sub')
 
-
-
-backimg = PhotoImage(file='C:\\Users\\aumsh\\Shrey HW\\AddDateTest.png')
-
-
-
-
+backimg = PhotoImage(file='C:\\Users\\3664\\python\\TEST\\AddDateTest.png')
 
 c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
-
 c.pack(fill='both', expand=True)
 
-
-
 buildMain()
-
 buildAdd()
 
-
-
 t = Label(subsub, text='why')
-
 t.pack()
-
-
 
 root.mainloop()
