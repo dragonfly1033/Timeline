@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import scrolledtext, messagebox
 from re import findall
-
+from datetime import datetime
 
 class Page(Frame):
 
@@ -11,6 +11,15 @@ class Page(Frame):
         Frame.__init__(self, parent)
 
         note.add(self, text=name)
+
+def save():
+    pass
+
+def getRat():
+    pass
+
+def refresh():
+    pass
 
 def validate(name, day, month, year, tags, info, dayU, monthU):
     def doName(name):
@@ -29,9 +38,13 @@ def validate(name, day, month, year, tags, info, dayU, monthU):
             return 'No Day~'
         elif(len(day)!=2):
             return 'Day not 2-digit~'
-        elif(int(day) not in days):
-            return 'Day not in range 1-31~'
         else:
+            try:
+                int(day)
+            except:
+                return 'Day not number~'
+            if(int(day) not in days):
+                return 'Day not in range 1-31~'
             return ''
     def doMonth(Month):
         if(Month=='Month'):
@@ -43,10 +56,16 @@ def validate(name, day, month, year, tags, info, dayU, monthU):
     def doYear(Year):
         if(Year=='Year'):
             return 'No Year~'
-        elif(int(Year) not in years):
-            return 'Year not in range 1000-2024~'
+        elif(len(Year)!=4):
+            return 'Year not 4-digit number~'
         else:
-            return ''      
+            try:
+                int(Year)
+            except:
+                return 'Year not number~'
+            if(int(Year) not in years):
+                return 'Year not in range 1-31~'
+            return ''    
     def doTags(Tags):
         if(Tags=='Tags'):
             return 'Tags=NA~'
@@ -76,7 +95,6 @@ def getVals():
     dayU = r1.get()
     monthU = r2.get()
     out = validate(name, day, month, year, tags, info, dayU, monthU)
-    print(out)
     if('Day=Unknown~' in out):
         out = out.replace('Day=Unknown~','')
         day = 'Unknown'
@@ -90,18 +108,25 @@ def getVals():
         out = out.replace('Info=NA~','')
         info=''
     if(len(out)==0):
-        print(name, day, month, year, tags, info)
+        return name, day, month, year, tags, info
     else:
         l = out.split('~')
         ou='Problems:\n'
         for i in l:
             ou += f'{i}\n' 
         messagebox.showinfo('Error', ou)
+        return None, None, None, None, None, None
 
+def combDate(day, month, year):
+    date = datetime.strptime(f'{day}/{month}/{year}', '%d/%B/%Y')
+    return date
 
-def addDate(name, day, month, year, tags, info):
-    pass
-
+def addDate():
+    name, day, month, year, tags, info = getVals()
+    if(name!=None):
+        date = combDate(day, month, year)
+        tags = findall('([a-zA-Z0-9_ ]*),*\s*', tags)
+        tags.remove('')     
 
 def buildAdd():
     global r1, r2, nameE, dayE, monthE, yearE, tagsE, infoE
@@ -175,12 +200,37 @@ def buildAdd():
     monthC.place(x=638, y=314, anchor='e')
 
     saveB = Button(subback, text='Save', font=('Bahnschrift Light', 13), relief='flat', bg='white', 
-    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: getVals())
+    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: addDate())
     saveB.place(x=702, y=477)
 
+def dozoom(event):
+    pass
+    # coords=[i.xc for i in points]
+    # coords.sort()
+    # srats=[i.rat for i in points]
+    # sf=1.001**event.delta
 
+    # absolute_difference_function = lambda list_value : abs(list_value - event.x)
+    # mid = min(coords, key=absolute_difference_function)
+    # print(timeline.itemcget(points[coords.index(mid)], option='text'))
+    # difs=[]
+    # newCoords=[]
+    # for i in coords: difs.append((mid-i)*sf)
+    # for i in difs: 
+    #     #if (mid-i)>=0 and (mid-i)<=8: 
+    #     newCoords.append(mid-i)
+    # erats=[(i-10)/580 for i in newCoords]
+    # for i in range(len(points)):
+    #     #print(points[i])
+    #     points[i].xc=newCoords[i]
+    #     points[i].rat=erats[i]
+    #     timeline.coords(points[i].point, newCoords[i]-4,points[i].y1,newCoords[i]+4,points[i].y2)
+    #     timeline.coords(points[i].txt, newCoords[i],points[i].interval)
+    #     timeline.coords(points[i].verLine, newCoords[i],points[i].yc,newCoords[i],points[i].yc2)
+    
 def buildMain():
     c.create_line(0,300,1020,300, fill='black', width=3)
+    #c.bind('<MouseWheel>', dozoom)
 
 GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
@@ -188,7 +238,6 @@ months=['January', 'February', 'March', 'April', 'May', 'June',
  'July', 'August', 'September', 'October', 'November', 'December']
 days=[i for i in range(1,32)]
 years=[i for i in range(1000,2025)]
-
 
 root = Tk()
 root.geometry('1020x600')
