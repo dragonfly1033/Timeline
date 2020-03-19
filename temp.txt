@@ -1,9 +1,7 @@
 from tkinter import *
-
 from tkinter import ttk
-
-from tkinter import scrolledtext
-
+from tkinter import scrolledtext, messagebox
+from re import findall
 
 
 class Page(Frame):
@@ -14,6 +12,91 @@ class Page(Frame):
 
         note.add(self, text=name)
 
+def validate(name, day, month, year, tags, info, dayU, monthU):
+    def doName(name):
+        if(name=='Name'):
+            return 'No Name~'
+        elif(len(name)==0):
+            return 'No Name~'
+        else:
+            return ''
+    def doDay(day):
+        if(day=='Day'):
+            return 'No Day~'
+        elif(dayU):
+            return 'Day=Unknown~'
+        elif(len(day)==0):
+            return 'No Day~'
+        elif(len(day)!=2):
+            return 'Day not 2-digit~'
+        elif(int(day) not in days):
+            return 'Day not in range 1-31~'
+        else:
+            return ''
+    def doMonth(Month):
+        if(Month=='Month'):
+            return 'No Month~'
+        elif(monthU):
+            return 'Month=Unknown~'
+        else:
+            return ''
+    def doYear(Year):
+        if(Year=='Year'):
+            return 'No Year~'
+        elif(int(Year) not in years):
+            return 'Year not in range 1000-2024~'
+        else:
+            return ''      
+    def doTags(Tags):
+        if(Tags=='Tags'):
+            return 'Tags=NA~'
+        else:
+            return ''
+    def doInfo(Info):
+        if(Info=='Info'):
+            return 'Info=NA~'
+        else:
+            return ''
+    out=''
+    out += doName(name)
+    out += doDay(day)
+    out += doMonth(month)
+    out += doYear(year)
+    out += doTags(tags)
+    out += doInfo(info)
+    return out
+
+def getVals():
+    name = nameE.get()
+    day = dayE.get()
+    month = months[round(monthE.get())]
+    year = yearE.get()
+    tags = tagsE.get()
+    info = infoE.get('1.0',END)
+    dayU = r1.get()
+    monthU = r2.get()
+    out = validate(name, day, month, year, tags, info, dayU, monthU)
+    print(out)
+    if('Day=Unknown~' in out):
+        out = out.replace('Day=Unknown~','')
+        day = 'Unknown'
+    if('Month=Unknown~' in out):
+        out = out.replace('Month=Unknown~','')
+        month = 'Unknown'
+    if('Tags=NA~' in out):
+        out = out.replace('Tags=NA~','')
+        tags=''
+    if('Info=NA~' in out):
+        out = out.replace('Info=NA~','')
+        info=''
+    if(len(out)==0):
+        print(name, day, month, year, tags, info)
+    else:
+        l = out.split('~')
+        ou='Problems:\n'
+        for i in l:
+            ou += f'{i}\n' 
+        messagebox.showinfo('Error', ou)
 
 
 def addDate(name, day, month, year, tags, info):
@@ -21,7 +104,7 @@ def addDate(name, day, month, year, tags, info):
 
 
 def buildAdd():
-    global r1, r2, nameE, dayE, monthE, yearE, tagsE, infoE, dayC, monthC
+    global r1, r2, nameE, dayE, monthE, yearE, tagsE, infoE
     def showSlider():
         val = monthE.get()
         ind = round(val)
@@ -92,7 +175,7 @@ def buildAdd():
     monthC.place(x=638, y=314, anchor='e')
 
     saveB = Button(subback, text='Save', font=('Bahnschrift Light', 13), relief='flat', bg='white', 
-    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: addDate())
+    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: getVals())
     saveB.place(x=702, y=477)
 
 
@@ -103,6 +186,9 @@ GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
 months=['January', 'February', 'March', 'April', 'May', 'June',
  'July', 'August', 'September', 'October', 'November', 'December']
+days=[i for i in range(1,32)]
+years=[i for i in range(1000,2025)]
+
 
 root = Tk()
 root.geometry('1020x600')
