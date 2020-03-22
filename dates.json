@@ -1,0 +1,58 @@
+{
+  "Battle of Hastings": {
+    "day": "01",
+    "month": "January",
+    "year": "1066",
+    "tags": [],
+    "info": "info about a war\n",
+    "rat": 0.06439032729390207
+  },
+  "magna carta": {
+    "day": "01",
+    "month": "January",
+    "year": "1215",
+    "info": "important paper\n",
+    "tags": [],
+    "rat": 0.2097560454413112
+  },
+  "test": {
+    "day": "02",
+    "month": "January",
+    "year": "1215",
+    "info": "test datea\n",
+    "tags": [],
+    "rat": 0.2097587165741119
+  },
+  "test2": {
+    "day": "03",
+    "month": "January",
+    "year": "1215",
+    "info": "sdvs\n",
+    "tags": [],
+    "rat": 0.20976138770691263
+  },
+  "plague": {
+    "day": "01",
+    "month": "January",
+    "year": "1346",
+    "tags": [],
+    "info": "death\nand more death\n\n\n\n\n\n\n",
+    "rat": 0.3375617365568564
+  },
+  "waterloo": {
+    "day": "01",
+    "month": "January",
+    "year": "1815",
+    "info": "hehe loo\n",
+    "tags": [],
+    "rat": 0.7951214430527842
+  },
+  "temp": {
+    "day": "14",
+    "month": "April",
+    "year": "1534",
+    "tags": [],
+    "info": "\n",
+    "rat": 0.521250196996044
+  }
+}
