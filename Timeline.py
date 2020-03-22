@@ -25,7 +25,8 @@ class Date:
         self.tags = tags
         self.info = info
         self.date = f'{day}/{month}/{year}'
-        self.dump = {'day':self.day, 'month':self.month, 'year':self.year, 'tags':self.tags, 'info':self.info}
+        self.type = 'date'
+        self.dump = {'day':self.day, 'month':self.month, 'year':self.year, 'tags':self.tags, 'info':self.info, 'type':self.type}
 
     def __repr__(self):
         print(f'Date({self.name}, {self.date}, {self.tags}, {self.info})')
@@ -40,6 +41,26 @@ class Date:
         self.x = x
         self.text_y1 = y1
         canvas.create_text(self.x, self.text_y1, text=self.name, fill=GREY, angle=90, anchor='w')
+
+
+class Range:
+    def __init__(self, name, day1, month1, year1, day2, month2, year2, tags, info):
+        self.name = name
+        self.day1 = day1
+        self.month1 = month1
+        self.year1 = year1
+        self.day2 = day2
+        self.month2 = month2
+        self.year2 = year2
+        self.tags = tags
+        self.info = info
+        self.date1 = f'{day1}/{month1}/{year1}'
+        self.date2 = f'{day2}/{month2}/{year2}'
+        self.type = 'range'
+        self.dump = {'from': self.date1 , 'to': self.date2 , 'tags': self.tags , 'info': self.info , 'type': self.type}
+
+    def __repr__(self):
+        print(f'Range({self.name}, {self.date1}, {self.date2}, {self.tags}, {self.info})')
 
 
 def save():
@@ -287,7 +308,9 @@ def dozoom(event):
     buildMain()
         
 def buildMain():
+    global curDayLabel
     c.delete('all')
+    curDayLabel = c.create_text(508, 20, text='01/January/1000', font=FONT, fill=GREY)
     c.create_line(0,300,1020,300, fill=GREY, width=3)
     for i in dates:
         day = dates[i]['day']
@@ -314,6 +337,14 @@ def getDates():
             d = f.read()
             dates = loads(d)
 
+def showCurDate(event):
+    if(event.x>=0 and event.x<=1016):
+        m = datetime(1000, 1, 1)
+        d=datetime(2024, 12, 31) - m
+        q = ((event.x*d)/1016)+m
+        qq = datetime.strftime(q, '%d/%B/%Y')
+        c.itemconfig(curDayLabel, text=qq)
+
 GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
 months=['January', 'February', 'March', 'April', 'May', 'June',
@@ -327,6 +358,7 @@ getRat()
 root = Tk()
 root.geometry('1020x600')
 root.bind('<Delete>', lambda x: clear())
+root.bind('<B1-Motion>', showCurDate)
 
 note =  ttk.Notebook(root, padding=0)
 note.pack(fill='both', expand=True)
