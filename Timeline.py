@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import scrolledtext, messagebox
 from re import findall
 from datetime import datetime
+from os import popen, path
+from json import dumps, loads
 
 class Page(Frame):
 
@@ -12,11 +14,54 @@ class Page(Frame):
 
         note.add(self, text=name)
 
-def save():
-    pass
 
-def getRat():
-    pass
+class Date:
+    def __init__(self, name, day, month, year, tags, info):
+        self.name = name
+        self.day = day
+        self.month = month
+        self.year = year
+        self.tags = tags
+        self.info = info
+        self.date = f'{day}/{month}/{year}'
+        self.dump = {'day':self.day, 'month':self.month, 'year':self.year, 'tags':self.tags, 'info':self.info}
+
+    def __repr__(self):
+        print(f'Date({self.name}, {self.date}, {self.tags}, {self.info})')
+
+
+    def verLine(self, x, y2, canvas):
+        self.x=x
+        self.verLine_y2 = y2
+        canvas.create_line(self.x, 300, self.x, self.verLine_y2, fill=GREY, width=2)
+
+    def text(self, x, y1, canvas):
+        self.x = x
+        self.text_y1 = y1
+        canvas.create_text(self.x, self.text_y1, text=self.name, fill=GREY, angle=90, anchor='w')
+
+
+def save():
+    global dates
+    with open('dates.json', 'w') as f:
+        d = dumps(dates)
+        f.write(d)
+
+def clear():
+    global dates
+    with open('dates.json', 'w') as f:
+        d = dumps({})
+        f.write(d)
+
+def getRat(name, curD):
+    global dates
+    minD = combDate('01','January','1000')
+    maxD = combDate('31','December','2024')
+    num = curD-minD
+    den = maxD-minD
+    rat = num/den
+    dates[name]['rat'] = rat
+    save()
 
 def refresh():
     pass
@@ -64,7 +109,7 @@ def validate(name, day, month, year, tags, info, dayU, monthU):
             except:
                 return 'Year not number~'
             if(int(Year) not in years):
-                return 'Year not in range 1-31~'
+                return 'Year not in range 1000-2024~'
             return ''    
     def doTags(Tags):
         if(Tags=='Tags'):
@@ -122,11 +167,17 @@ def combDate(day, month, year):
     return date
 
 def addDate():
+    global dates
     name, day, month, year, tags, info = getVals()
     if(name!=None):
         date = combDate(day, month, year)
         tags = findall('([a-zA-Z0-9_ ]*),*\s*', tags)
         tags.remove('')     
+        new = Date(name, day, month, year, tags, info)
+        dates[name] = new.dump
+        getRat(name, date)
+        save()
+        buildMain()
 
 def buildAdd():
     global r1, r2, nameE, dayE, monthE, yearE, tagsE, infoE
@@ -229,8 +280,33 @@ def dozoom(event):
     #     timeline.coords(points[i].verLine, newCoords[i],points[i].yc,newCoords[i],points[i].yc2)
     
 def buildMain():
-    c.create_line(0,300,1020,300, fill='black', width=3)
+    c.create_line(0,300,1020,300, fill=GREY, width=3)
     #c.bind('<MouseWheel>', dozoom)
+    for i in dates:
+        day = dates[i]['day']
+        month = dates[i]['month']
+        year = dates[i]['year']
+        tags = dates[i]['tags']
+        info = dates[i]['info']
+        rat = dates[i]['rat']
+        x = rat*1016
+        y2 = 300 - 25
+        D = Date(i, day, month, year, tags, info)
+        D.verLine(x, y2, c)
+        D.text(x, y2-10, c)
+
+
+def getDates():
+    global dates
+    folder = popen('chdir').read().strip('\n')
+    if(not path.exists(folder+ r'\dates.json')):
+        with open('dates.json', 'w') as f:
+            d = dumps({})
+            f.write(d)
+    else:
+        with open('dates.json', 'r') as f:
+            d = f.read()
+            dates = loads(d)
 
 GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
@@ -238,9 +314,12 @@ months=['January', 'February', 'March', 'April', 'May', 'June',
  'July', 'August', 'September', 'October', 'November', 'December']
 days=[i for i in range(1,32)]
 years=[i for i in range(1000,2025)]
+dates={}
+getDates()
 
 root = Tk()
 root.geometry('1020x600')
+root.bind('<Delete>', lambda x: clear())
 
 note =  ttk.Notebook(root, padding=0)
 note.pack(fill='both', expand=True)
@@ -261,3 +340,5 @@ t = Label(subsub, text='why')
 t.pack()
 
 root.mainloop()
+
+print(dates)
