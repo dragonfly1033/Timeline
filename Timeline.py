@@ -6,6 +6,7 @@ from datetime import datetime
 from os import popen, path
 from json import dumps, loads
 
+
 class Page(Frame):
 
     def __init__(self, parent, name):
@@ -53,18 +54,17 @@ def clear():
         d = dumps({})
         f.write(d)
 
-def getRat(name, curD):
+def getRat():
     global dates
-    minD = combDate('01','January','1000')
-    maxD = combDate('31','December','2024')
-    num = curD-minD
-    den = maxD-minD
-    rat = num/den
-    dates[name]['rat'] = rat
+    for i in dates:
+        curD = combDate(dates[i]['day'], dates[i]['month'], dates[i]['year'])
+        minD = combDate('01','January','1000')
+        maxD = combDate('31','December','2024')
+        num = curD-minD
+        den = maxD-minD
+        rat = num/den
+        dates[i]['rat'] = rat
     save()
-
-def refresh():
-    pass
 
 def validate(name, day, month, year, tags, info, dayU, monthU):
     def doName(name):
@@ -163,21 +163,31 @@ def getVals():
         return None, None, None, None, None, None
 
 def combDate(day, month, year):
-    date = datetime.strptime(f'{day}/{month}/{year}', '%d/%B/%Y')
-    return date
+    try:
+        date = datetime.strptime(f'{day}/{month}/{year}', '%d/%B/%Y')
+        return date
+    except ValueError as e:
+        messagebox.showwarning('Warning', e)
 
 def addDate():
     global dates
     name, day, month, year, tags, info = getVals()
     if(name!=None):
-        date = combDate(day, month, year)
-        tags = findall('([a-zA-Z0-9_ ]*),*\s*', tags)
-        tags.remove('')     
-        new = Date(name, day, month, year, tags, info)
-        dates[name] = new.dump
-        getRat(name, date)
-        save()
-        buildMain()
+        if(day!='Unknown' and month!='Unknown'):
+            date = combDate(day, month, year)
+            if(date != None):
+                tags = findall('([a-zA-Z0-9_ ]*),*\s*', tags)
+                tags.remove('')     
+                new = Date(name, day, month, year, tags, info)
+                dates[name] = new.dump
+                getRat()
+                save()
+                buildMain()
+        else:
+            if(day=='Unknown'):
+                startDay = '01'
+            if(month=='Unknown'):
+                startMonth = 'January'
 
 def buildAdd():
     global r1, r2, nameE, dayE, monthE, yearE, tagsE, infoE
@@ -255,33 +265,30 @@ def buildAdd():
     saveB.place(x=702, y=477)
 
 def dozoom(event):
-    pass
-    # coords=[i.xc for i in points]
-    # coords.sort()
-    # srats=[i.rat for i in points]
-    # sf=1.001**event.delta
-
-    # absolute_difference_function = lambda list_value : abs(list_value - event.x)
-    # mid = min(coords, key=absolute_difference_function)
-    # print(timeline.itemcget(points[coords.index(mid)], option='text'))
-    # difs=[]
-    # newCoords=[]
-    # for i in coords: difs.append((mid-i)*sf)
-    # for i in difs: 
-    #     #if (mid-i)>=0 and (mid-i)<=8: 
-    #     newCoords.append(mid-i)
-    # erats=[(i-10)/580 for i in newCoords]
-    # for i in range(len(points)):
-    #     #print(points[i])
-    #     points[i].xc=newCoords[i]
-    #     points[i].rat=erats[i]
-    #     timeline.coords(points[i].point, newCoords[i]-4,points[i].y1,newCoords[i]+4,points[i].y2)
-    #     timeline.coords(points[i].txt, newCoords[i],points[i].interval)
-    #     timeline.coords(points[i].verLine, newCoords[i],points[i].yc,newCoords[i],points[i].yc2)
-    
+    global dates
+    print(dates)
+    xs=[dates[i]['rat']*1016 for i in dates]
+    difs=[]
+    c = min(xs, key=lambda list_value : abs(list_value - event.x))
+    sf = 1.001**event.delta
+    for i in range(len(xs)):
+        if(xs[i]!=c):
+            d = xs[i] - c
+            d*=sf
+            d+=c
+            difs.append(d)
+        else:
+            difs.append(c)
+    ind=0
+    for i in dates:
+        dates[i]['rat'] = difs[ind]/1016
+        ind+=1
+    save()
+    buildMain()
+        
 def buildMain():
+    c.delete('all')
     c.create_line(0,300,1020,300, fill=GREY, width=3)
-    #c.bind('<MouseWheel>', dozoom)
     for i in dates:
         day = dates[i]['day']
         month = dates[i]['month']
@@ -294,7 +301,6 @@ def buildMain():
         D = Date(i, day, month, year, tags, info)
         D.verLine(x, y2, c)
         D.text(x, y2-10, c)
-
 
 def getDates():
     global dates
@@ -316,6 +322,7 @@ days=[i for i in range(1,32)]
 years=[i for i in range(1000,2025)]
 dates={}
 getDates()
+getRat()
 
 root = Tk()
 root.geometry('1020x600')
@@ -332,6 +339,7 @@ backimg = PhotoImage(file='C:\\Users\\3664\\python\\TEST\\AddDateTest.png')
 
 c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
 c.pack(fill='both', expand=True)
+c.bind('<MouseWheel>', dozoom)
 
 buildMain()
 buildAdd()
@@ -341,4 +349,4 @@ t.pack()
 
 root.mainloop()
 
-print(dates)
+#print(dates)
