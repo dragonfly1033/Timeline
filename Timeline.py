@@ -286,32 +286,34 @@ def buildAdd():
     saveB.place(x=702, y=477)
 
 def dozoom(event):
-    global dates
-    print(dates)
+    global dates, zoom, minLoc, maxLoc
     xs=[dates[i]['rat']*1016 for i in dates]
     difs=[]
-    c = min(xs, key=lambda list_value : abs(list_value - event.x))
+    cen = min(xs, key=lambda list_value : abs(list_value - event.x))
     sf = 1.001**event.delta
     for i in range(len(xs)):
-        if(xs[i]!=c):
-            d = xs[i] - c
+        if(xs[i]!=cen):
+            d = xs[i] - cen
             d*=sf
-            d+=c
+            d+=cen
             difs.append(d)
         else:
-            difs.append(c)
+            difs.append(cen)#
     ind=0
     for i in dates:
         dates[i]['rat'] = difs[ind]/1016
         ind+=1
+    minLoc = ((minLoc-cen)*sf)+cen
+    maxLoc = ((maxLoc-cen)*sf)+cen
     save()
     buildMain()
-        
+
 def buildMain():
-    global curDayLabel
+    global curDayLabel, mainLine
     c.delete('all')
     curDayLabel = c.create_text(508, 20, text='01/January/1000', font=FONT, fill=GREY)
-    c.create_line(0,300,1020,300, fill=GREY, width=3)
+    mainLine = c.create_line(-10000,300,10160,300, fill=GREY, width=3)
+    ind=0
     for i in dates:
         day = dates[i]['day']
         month = dates[i]['month']
@@ -324,7 +326,8 @@ def buildMain():
         D = Date(i, day, month, year, tags, info)
         D.verLine(x, y2, c)
         D.text(x, y2-10, c)
-
+        ind+=1
+        
 def getDates():
     global dates
     folder = popen('chdir').read().strip('\n')
@@ -341,9 +344,30 @@ def showCurDate(event):
     if(event.x>=0 and event.x<=1016):
         m = datetime(1000, 1, 1)
         d=datetime(2024, 12, 31) - m
-        q = ((event.x*d)/1016)+m
+        subr = event.x-minLoc
+        r = maxLoc-minLoc
+        q = ((subr/r)*d) + m
         qq = datetime.strftime(q, '%d/%B/%Y')
         c.itemconfig(curDayLabel, text=qq)
+
+def scroll_start(event):
+    global cSM
+    c.scan_mark(event.x, 300)
+    cSM=event.x
+
+def scroll(event):
+    c.scan_dragto(event.x, 300, gain=1)
+    
+def postScroll(event):
+    global minLoc, maxLoc
+    scrollD = event.x - cSM
+    c.scan_dragto(cSM, 300, gain=1)
+    minLoc += scrollD
+    maxLoc += scrollD
+    for i in dates:
+        newx = (dates[i]['rat']*1016) + scrollD
+        dates[i]['rat'] = newx/1016
+    buildMain()
 
 GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
@@ -352,13 +376,16 @@ months=['January', 'February', 'March', 'April', 'May', 'June',
 days=[i for i in range(1,32)]
 years=[i for i in range(1000,2025)]
 dates={}
+minLoc=0
+maxLoc=1016
+cSM=0
 getDates()
 getRat()
 
 root = Tk()
 root.geometry('1020x600')
 root.bind('<Delete>', lambda x: clear())
-root.bind('<B1-Motion>', showCurDate)
+root.bind('<s>', showCurDate)
 
 note =  ttk.Notebook(root, padding=0)
 note.pack(fill='both', expand=True)
@@ -372,6 +399,9 @@ backimg = PhotoImage(file='C:\\Users\\3664\\python\\TEST\\AddDateTest.png')
 c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
 c.pack(fill='both', expand=True)
 c.bind('<MouseWheel>', dozoom)
+c.bind('<ButtonPress-1>', scroll_start)
+c.bind('<ButtonRelease-1>', postScroll)
+c.bind('<B1-Motion>', scroll)
 
 buildMain()
 buildAdd()
@@ -380,5 +410,3 @@ t = Label(subsub, text='why')
 t.pack()
 
 root.mainloop()
-
-#print(dates)
