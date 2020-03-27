@@ -160,6 +160,14 @@ def getVals():
     info = infoE.get('1.0',END)
     dayU = r1.get()
     monthU = r2.get()
+    nameE.delete(0,END)
+    dayE.delete(0,END)
+    yearE.delete(0,END)
+    tagsE.delete(0,END)
+    infoE.delete('1.0',END)
+    r1.set(0)
+    r2.set(0)
+
     out = validate(name, day, month, year, tags, info, dayU, monthU)
     if('Day=Unknown~' in out):
         out = out.replace('Day=Unknown~','')
@@ -329,7 +337,7 @@ def buildMain():
         ind+=1
         
 def getDates():
-    global dates
+    global dates, folder
     folder = popen('chdir').read().strip('\n')
     if(not path.exists(folder+ r'\dates.json')):
         with open('dates.json', 'w') as f:
@@ -394,7 +402,7 @@ main = Page(note, 'Timeline')
 sub = Page(note, 'Add Date')
 subsub = Page(note, 'sub sub')
 
-backimg = PhotoImage(file='C:\\Users\\3664\\python\\TEST\\AddDateTest.png')
+backimg = PhotoImage(file=f'{folder}\\AddDateTest.png')
 
 c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
 c.pack(fill='both', expand=True)
