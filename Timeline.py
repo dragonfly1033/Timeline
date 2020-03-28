@@ -7,6 +7,40 @@ from os import popen, path
 from json import dumps, loads
 
 
+class CollapseWindow(Frame):
+    def __init__(self, parent, width=0, title=None):
+            Frame.__init__(self, parent)
+            #self.pack_propagate(0)
+            self.state = False 
+            self.title=title
+            self.width=width
+
+            self.topFrame = Frame(self, bg='white')
+            self.topFrame.pack(fill='x', expand=True)
+            self.titleL = Label(self.topFrame, text=self.title, font=FONT, fg=GREY, bg='white')
+            self.titleL.pack(side='left', fill='x', expand=True)
+            self.button = Button(self.topFrame, text=' +', relief='flat', command=lambda:self.toggle(), font=FONT, fg=GREY, bg='white')
+            self.button.pack(side='left')
+
+            self.main = Label(self, bg=GREY)
+
+    def updateLabel(self):
+        root.update()
+        while self.winfo_width() < self.width:
+            self.title += ' '
+            self.titleL.configure(text=self.title)
+            root.update()
+
+    def toggle(self):
+        if(not self.state):
+            self.main.pack(side='bottom', fill='x', expand=True)
+            self.button.configure(text=' - ')
+        else:
+            self.main.pack_forget()
+            self.button.configure(text=' +')
+        self.state = not self.state
+
+
 class Page(Frame):
 
     def __init__(self, parent, name):
@@ -35,12 +69,14 @@ class Date:
     def verLine(self, x, y2, canvas):
         self.x=x
         self.verLine_y2 = y2
-        canvas.create_line(self.x, 300, self.x, self.verLine_y2, fill=GREY, width=2)
+        self.verline = canvas.create_line(self.x, 300, self.x, self.verLine_y2, fill=GREY, width=2)
+        canvas.tag_bind(self.verline, '<Double-1>', lambda x: showInfo.changeInfo())
 
     def text(self, x, y1, canvas):
         self.x = x
         self.text_y1 = y1
-        canvas.create_text(self.x, self.text_y1, text=self.name, fill=GREY, angle=90, anchor='w')
+        self.text = canvas.create_text(self.x, self.text_y1, text=self.name, fill=GREY, angle=90, anchor='w')
+        canvas.tag_bind(self.text, '<Double-1>', lambda x: showInfo.changeInfo())
 
 
 class Range:
@@ -317,9 +353,9 @@ def dozoom(event):
     buildMain()
 
 def buildMain():
-    global curDayLabel, mainLine
+    global curDayLabel, mainLine, showInfo
     c.delete('all')
-    curDayLabel = c.create_text(508, 20, text='01/January/1000', font=FONT, fill=GREY)
+    curDayLabel = c.create_text(508, 27, text='01 January 1000', font=FONT, fill=GREY)
     mainLine = c.create_line(-10000,300,10160,300, fill=GREY, width=3)
     ind=0
     for i in dates:
@@ -335,6 +371,19 @@ def buildMain():
         D.verLine(x, y2, c)
         D.text(x, y2-10, c)
         ind+=1
+    showInfo = CollapseWindow(c, width=200, title='Info')
+    showInfo.place(x=1016-200, y=0)
+    showInfo.updateLabel()
+    showInfo.main.configure(image=showInfoImage)
+    showInfo.main.image = showInfoImage
+    showInfo.nameLabel = Label(showInfo.main, text='Name', font=FONT, fg=GREY, bg='white')
+    showInfo.nameLabel.place(x=10, y=30)
+    showInfo.dateLabel = Label(showInfo.main, text='Date', font=FONT, fg=GREY, bg='white')
+    showInfo.dateLabel.place(x=10, y=100)
+    showInfo.infoLabell = Label(showInfo.main, text='Info', font=FONT, fg=GREY, bg='white')
+    showInfo.infoLabell.place(x=10, y=170)
+    showInfo.infoLabel = scrolledtext.ScrolledText(showInfo.main, font=FONT, fg=GREY, bg='white', width=12, height=10, relief='flat')
+    showInfo.infoLabel.place(x=10, y=210)
         
 def getDates():
     global dates, folder
@@ -355,7 +404,7 @@ def showCurDate(event):
         subr = event.x-minLoc
         r = maxLoc-minLoc
         q = ((subr/r)*d) + m
-        qq = datetime.strftime(q, '%d/%B/%Y')
+        qq = datetime.strftime(q, '%d %B %Y')
         c.itemconfig(curDayLabel, text=qq)
 
 def scroll_start(event):
@@ -376,6 +425,7 @@ def postScroll(event):
         newx = (dates[i]['rat']*1016) + scrollD
         dates[i]['rat'] = newx/1016
     buildMain()
+
 
 GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
@@ -400,11 +450,12 @@ note.pack(fill='both', expand=True)
 
 main = Page(note, 'Timeline')
 sub = Page(note, 'Add Date')
-subsub = Page(note, 'sub sub')
+treeview = Page(note, 'Edit')
 
 backimg = PhotoImage(file=f'{folder}\\AddDateTest.png')
+showInfoImage = PhotoImage(file=f'{folder}\\showInfo.png')
 
-c = Canvas(main, bd=0, highlightthickness=0, relief='flat')
+c = Canvas(main, bd=0, highlightthickness=0, relief='flat', bg='white')
 c.pack(fill='both', expand=True)
 c.bind('<MouseWheel>', dozoom)
 c.bind('<ButtonPress-1>', scroll_start)
@@ -414,7 +465,7 @@ c.bind('<B1-Motion>', scroll)
 buildMain()
 buildAdd()
 
-t = Label(subsub, text='why')
-t.pack()
+# t = ttk.Treeview(treeview)
+# t.pack()
 
 root.mainloop()
