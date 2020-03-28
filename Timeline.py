@@ -272,6 +272,14 @@ def buildAdd():
         if(wid not in es):
             wid.delete(0,END)
             es.append(wid)
+
+    def pressSave():
+        addDate()
+        es.clear()
+        nameE.insert(0, 'Name')
+        dayE.insert(0, 'Day')
+        yearE.insert(0, 'Year')
+        tagsE.insert(0, 'Tags')
             
     es=[]
 
@@ -326,7 +334,7 @@ def buildAdd():
     monthC.place(x=638, y=314, anchor='e')
 
     saveB = Button(subback, text='Save', font=('Bahnschrift Light', 13), relief='flat', bg='white', 
-    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: addDate())
+    bd=0, highlightthickness=0, width=24, height=1, fg=GREY, takefocus=False, command=lambda: pressSave())
     saveB.place(x=702, y=477)
 
 def dozoom(event):
