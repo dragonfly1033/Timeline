@@ -70,13 +70,13 @@ class Date:
         self.x=x
         self.verLine_y2 = y2
         self.verline = canvas.create_line(self.x, 300, self.x, self.verLine_y2, fill=GREY, width=2)
-        canvas.tag_bind(self.verline, '<Double-1>', lambda x: showInfo.changeInfo())
+        canvas.tag_bind(self.verline, '<Double-1>', lambda x: changeInfo(self.name, self.date, self.info))
 
     def text(self, x, y1, canvas):
         self.x = x
         self.text_y1 = y1
         self.text = canvas.create_text(self.x, self.text_y1, text=self.name, fill=GREY, angle=90, anchor='w')
-        canvas.tag_bind(self.text, '<Double-1>', lambda x: showInfo.changeInfo())
+        canvas.tag_bind(self.text, '<Double-1>', lambda x: changeInfo(self.name, self.date, self.info))
 
 
 class Range:
@@ -353,7 +353,7 @@ def dozoom(event):
     buildMain()
 
 def buildMain():
-    global curDayLabel, mainLine, showInfo
+    global curDayLabel, mainLine
     c.delete('all')
     curDayLabel = c.create_text(508, 27, text='01 January 1000', font=FONT, fill=GREY)
     mainLine = c.create_line(-10000,300,10160,300, fill=GREY, width=3)
@@ -371,19 +371,6 @@ def buildMain():
         D.verLine(x, y2, c)
         D.text(x, y2-10, c)
         ind+=1
-    showInfo = CollapseWindow(c, width=200, title='Info')
-    showInfo.place(x=1016-200, y=0)
-    showInfo.updateLabel()
-    showInfo.main.configure(image=showInfoImage)
-    showInfo.main.image = showInfoImage
-    showInfo.nameLabel = Label(showInfo.main, text='Name', font=FONT, fg=GREY, bg='white')
-    showInfo.nameLabel.place(x=10, y=30)
-    showInfo.dateLabel = Label(showInfo.main, text='Date', font=FONT, fg=GREY, bg='white')
-    showInfo.dateLabel.place(x=10, y=100)
-    showInfo.infoLabell = Label(showInfo.main, text='Info', font=FONT, fg=GREY, bg='white')
-    showInfo.infoLabell.place(x=10, y=170)
-    showInfo.infoLabel = scrolledtext.ScrolledText(showInfo.main, font=FONT, fg=GREY, bg='white', width=12, height=10, relief='flat')
-    showInfo.infoLabel.place(x=10, y=210)
         
 def getDates():
     global dates, folder
@@ -426,6 +413,36 @@ def postScroll(event):
         dates[i]['rat'] = newx/1016
     buildMain()
 
+def changeInfo(name, date, info):
+    print(name, date, info)
+    showInfo.nameLabel.configure(text=name)
+    showInfo.dateLabel.configure(text=date)
+    showInfo.infoLabel.configure(state='normal')
+    showInfo.infoLabel.delete('1.0', END)
+    showInfo.infoLabel.insert('1.0', info)
+    showInfo.infoLabel.configure(state='disabled')
+    if(not showInfo.state):
+        showInfo.toggle()
+    else:
+        showInfo.toggle()
+        showInfo.toggle()
+
+def makeShowInfo():
+    global showInfo
+    showInfo = CollapseWindow(c, width=200, title='Info')
+    showInfo.place(x=1016-200, y=0)
+    showInfo.updateLabel()
+    showInfo.main.configure(image=showInfoImage)
+    showInfo.main.image = showInfoImage
+    showInfo.nameLabel = Label(showInfo.main, text='Name', font=('Bahnschrift Light', 12), fg=GREY, bg='white')
+    showInfo.nameLabel.place(x=10, y=30)
+    showInfo.dateLabel = Label(showInfo.main, text='Date', font=('Bahnschrift Light', 12), fg=GREY, bg='white')
+    showInfo.dateLabel.place(x=10, y=100)
+    showInfo.infoLabell = Label(showInfo.main, text='Info', font=('Bahnschrift Light', 18), fg=GREY, bg='white')
+    showInfo.infoLabell.place(x=10, y=170)
+    showInfo.infoLabel = scrolledtext.ScrolledText(showInfo.main, font=('Bahnschrift Light', 12), fg=GREY, bg='white', width=17, height=15, relief='flat')
+    showInfo.infoLabel.place(x=10, y=210)
+    showInfo.infoLabel.configure(state='disabled')
 
 GREY = '#7f7f7f'
 FONT = ('Bahnschrift Light', 18)
@@ -464,6 +481,7 @@ c.bind('<B1-Motion>', scroll)
 
 buildMain()
 buildAdd()
+makeShowInfo()
 
 # t = ttk.Treeview(treeview)
 # t.pack()
